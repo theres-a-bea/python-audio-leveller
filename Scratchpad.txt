@@ -33,3 +33,8 @@ Compressor code;
     print("Applying Compressor at " + str(thresh) + "dB")
     fx.compress_dynamic_range(filein, thresh, 4, 1, 30)
     print("Compressor applied")
+    
+        #Normalizes
+    print("Applying Normalization")
+    fx.normalize(filein)
+    print("Normalized")
