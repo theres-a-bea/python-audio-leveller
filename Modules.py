@@ -1,9 +1,15 @@
 from pathlib import Path
 import os
-from pydub import AudioSegment
-from pydub import effects as fx
-from pydub import utils as pyutil
 import eyed3
+
+def safeconvert(input):
+    output=input.replace(" ","-")
+    output=output.replace(',','')
+    output=output.replace('(','')
+    output=output.replace(')','')
+    output=output.encode('ascii', 'xmlcharrefreplace')
+    output=output.decode('ascii')
+    return output
 
 #Gets visable files in directory, returns fileList in array as posixPathes
 def getFilesInDir(dir):
@@ -29,7 +35,7 @@ def getFilesInDir(dir):
     #returns array
     return fileList
 
-#Applies gain to get RMS to -6 & applies a 4:1, 1ms attack, 30ms release, -20 thresh compressor
+#Applies ffmpeg's loudnorm
 def leveller(inputfile, outputfile):
     print("Processing " + str(inputfile))
     #Defines Input/Output Extensions
@@ -40,26 +46,18 @@ def leveller(inputfile, outputfile):
     extout = exttmp[1:]
     print("Extension out: " + extout)
 
-    #Defines filein as an AudioSegment for pyDub fuckery :P
-    filein = AudioSegment.from_file(inputfile, extin)
+    print("Temporarily renaming file so FFMpeg doesn't cry")
+    safein = safeconvert(inputfile)
+    os.rename(inputfile, safein)
+    safeout = safeconvert(outputfile)
 
-    #Defines filein's current RMS
-    dB = filein.dBFS
+    #ffmpeg -i input.mp3 -af loudnorm=I=-16:LRA=11:TP=-1.5 output.mp3
+    command = "ffmpeg -loglevel error -i " + str(safein) + " -af loudnorm=I=-9:LRA=11:TP=-1.5 " + str(safeout)
+    print("Running " + command)
+    os.system(command)
+    os.rename(safein, inputfile)
+    os.rename(safeout, outputfile)
 
-    #Gets difference in RMS before and applies gain to get it to -6
-    change_in_dB = -1 * (dB)
-    print("Gain at " + str(change_in_dB))
-    filein.apply_gain(change_in_dB)
-    print("Gain Applied")
-
-    #Normalizes
-    print("Applying Normalization")
-    fx.normalize(filein)
-    print("Normalized")
-
-    print("Writing to " + outputfile)
-    filein.export(outputfile, extout)
-    print("Write successful")
 
 def metaMatch(inputfile, outputfile):
     print ('Writing meta to ' + outputfile)
@@ -79,6 +77,3 @@ def metaMatch(inputfile, outputfile):
     print ('Track Number: ' + str(trnum[0]))
     outmeta.tag.save()
     print ('Meta Saved.')
-
-leveller("testOutput/05 Open Road Song.mp3", "open-out.mp3")
-leveller("testOutput/1-15 Sheena Is A Punk Rocker (Single Version).mp3", "sheena-out.mp3")

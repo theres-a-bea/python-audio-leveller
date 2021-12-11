@@ -11,10 +11,7 @@ for file in fileArray:
     folder = os.path.dirname(file)
     tmpout = folder + '/' + inname + str(2) + '.' + ext
     permout = folder + '/' + inname + '.' + ext
-    try:
-        Modules.leveller(file, tmpout)
-        Modules.metaMatch(file, tmpout)
-        print("Renaming file")
-        os.rename(tmpout, permout)
-    except:
-        print("File " + file + " not supported")
+    Modules.leveller(permout, tmpout)
+    Modules.metaMatch(permout, tmpout)
+    print("Renaming file")
+    os.rename(tmpout, permout)
