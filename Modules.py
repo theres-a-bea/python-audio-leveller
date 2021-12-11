@@ -50,8 +50,6 @@ def leveller(inputfile, outputfile):
     safein = safeconvert(inputfile)
     os.rename(inputfile, safein)
     safeout = safeconvert(outputfile)
-
-    #ffmpeg -i input.mp3 -af loudnorm=I=-16:LRA=11:TP=-1.5 output.mp3
     command = "ffmpeg -loglevel error -i " + str(safein) + " -af loudnorm=I=-9:LRA=11:TP=-1.5 " + str(safeout)
     print("Running " + command)
     os.system(command)
