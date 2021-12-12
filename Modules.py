@@ -48,9 +48,13 @@ def getFilesInDir(dir):
     return fileList
 
 #Generates Timestamp
-def timestamp():
-    dateTimeObj = datetime.now()
-    timecode = dateTimeObj.strftime("%Y-%m-%d_%H%M%S")
+def timestamp(var=1):
+    if var == 1:
+        dateTimeObj = datetime.now()
+        timecode = dateTimeObj.strftime("%Y-%m-%d_%H%M%S")
+    if var == 2:
+        dateTimeObj = datetime.now()
+        timecode = dateTimeObj.strftime("%Y%m%d%H%M%S%f")
     return timecode
 
 #Applies ffmpeg's loudnorm
