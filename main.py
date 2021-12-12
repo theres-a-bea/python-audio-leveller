@@ -4,48 +4,38 @@ import threading
 import multiprocessing
 
 def processfile(file):
-    #checks if file already processed
-    if processedFiles.includes(file):
+    #splits input file into name and extension
+    inname, ext = os.path.splitext(file)
+    #generates tmp file with same ext
+    #finds directory of input file and changes directory to it (look, it makes ffmpeg cry less, fuck off)
+    folder = os.path.dirname(file)
+    stamp = Modules.timestamp(2)
+    tmpfile = folder + "\\" + stamp + ext
+    #print("Changing Directory to " + folder)
+    #startwd = os.getcwd()
+    #os.chdir(folder)
+
+    try:
+        #once we have the basename of the file, run the leveller and metamatcher
+        Modules.leveller(file,tmpfile)
+        Modules.metaMatch(file,tmpfile)
+        print("Renaming file " + tmpfile)
+        os.remove(file)
+        os.rename(tmpfile,file)
+
+    except:
+        #if above fails, log for investigation
+        print("Exception found at " + str(file) + " - logging")
+        stamp = Modules.timestamp()
+        f = open("error.log", 'a')
+        exception = "\n" + str(stamp) + ": File " + str(file) + " failed"
+        print(exception)
+        f.write(exception)
+        f.close()
         return False
-    else:
-        #splits input file into name and extension
-        inname, ext = os.path.splitext(file)
-        #generates tmp file with same ext
-        tmpfile = "foo" + ext
-        #finds directory of input file and changes directory to it (look, it makes ffmpeg cry less, fuck off)
-        folder = os.path.dirname(file)
-        print("Changing Directory to " + folder)
-        startwd = os.getcwd()
-        os.chdir(folder)
 
-        try:
-            permout = os.path.basename(file)
-            #once we have the basename of the file, run the leveller and metamatcher
-            Modules.leveller(permout,tmpfile)
-            Modules.metaMatch(permout,tmpfile)
-            print("Renaming file " + tmpfile)
-            os.remove(permout)
-            os.rename(tmpfile,permout)
-
-        except:
-            #if above fails, log for investigation
-            print("Exception found at " + file + " - logging")
-            os.chdir(startwd)
-            stamp = Modules.timestamp()
-            f = open("error.log", 'a')
-            exception = "\n" + stamp + ": File " + permout + " failed"
-            print(exception)
-            f.write(exception)
-            f.close()
-            return False
-
-
-        #if we're not in the main dir, change back to it
-        if os.getcwd() != startwd:
-            os.chdir(startwd)
-
-        processedFiles.append(file)
-        return True
+    processedFiles.append(file)
+    return True
 
 inputdir = input("Please define input directory: \n")
 
@@ -60,6 +50,7 @@ while len(processedFiles)<=len(fileArray):
         fileToProcess = fileArray[nextFile]
         newThread = threading.Thread(target=processfile, args=(fileToProcess,), daemon=True)
         newThread.start()
+        print("Beginning process " + str(nextFile) + " of " + str(len(fileArray)))
         nextFile = nextFile + 1
     else:
-        print("Max threads used")
+        nextFile = nextFile
