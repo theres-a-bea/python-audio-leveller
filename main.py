@@ -7,16 +7,12 @@ def processfile(file):
     #splits input file into name and extension
     inname, ext = os.path.splitext(file)
     #generates tmp file with same ext
-    #finds directory of input file and changes directory to it (look, it makes ffmpeg cry less, fuck off)
     folder = os.path.dirname(file)
     stamp = Modules.timestamp(2)
     tmpfile = folder + "\\" + stamp + ext
-    #print("Changing Directory to " + folder)
-    #startwd = os.getcwd()
-    #os.chdir(folder)
 
     try:
-        #once we have the basename of the file, run the leveller and metamatcher
+        #Runs Leveller on input file
         Modules.leveller(file,tmpfile)
         Modules.metaMatch(file,tmpfile)
         print("Renaming file " + tmpfile)
