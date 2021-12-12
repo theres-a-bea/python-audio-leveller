@@ -48,9 +48,13 @@ def getFilesInDir(dir):
     return fileList
 
 #Generates Timestamp
-def timestamp():
-    dateTimeObj = datetime.now()
-    timecode = dateTimeObj.strftime("%Y-%m-%d_%H%M%S")
+def timestamp(var=1):
+    if var == 1:
+        dateTimeObj = datetime.now()
+        timecode = dateTimeObj.strftime("%Y-%m-%d_%H%M%S")
+    if var == 2:
+        dateTimeObj = datetime.now()
+        timecode = dateTimeObj.strftime("%Y%m%d%H%M%S%f")
     return timecode
 
 #Applies ffmpeg's loudnorm
@@ -58,8 +62,8 @@ def leveller(inputfile, outputfile, intLoud=-9, LRA=11, TP=-1.5):
     print("Processing " + str(inputfile))
 
     #Converts input strings into bash-safe pathes
-    safein = safeconvert(inputfile, "path")
-    safeout = safeconvert(outputfile, "path")
+    #safein = safeconvert(inputfile, "path")
+    #safeout = safeconvert(outputfile, "path")
 
     #Defines Loudnorm variables:
 
@@ -74,9 +78,8 @@ def leveller(inputfile, outputfile, intLoud=-9, LRA=11, TP=-1.5):
 
 
     #Generates & runs ffmpeg command
-    command = "ffmpeg -loglevel error -i " + str(safein) + " -af loudnorm=I="+integratedLoudness+":LRA="+loudnessRange+":TP="+truePeak+" " + str(safeout)
+    command = 'ffmpeg -loglevel error -y -i "' + str(inputfile) + '" -af loudnorm=I='+integratedLoudness+':LRA='+loudnessRange+':TP='+truePeak+' "' + str(outputfile)+'"'
     
-
     print("Running " + command)
     os.system(command)
 
