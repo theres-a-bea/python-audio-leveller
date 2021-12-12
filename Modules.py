@@ -58,8 +58,8 @@ def leveller(inputfile, outputfile, intLoud=-9, LRA=11, TP=-1.5):
     print("Processing " + str(inputfile))
 
     #Converts input strings into bash-safe pathes
-    safein = safeconvert(inputfile, "path")
-    safeout = safeconvert(outputfile, "path")
+    #safein = safeconvert(inputfile, "path")
+    #safeout = safeconvert(outputfile, "path")
 
     #Defines Loudnorm variables:
 
@@ -74,9 +74,8 @@ def leveller(inputfile, outputfile, intLoud=-9, LRA=11, TP=-1.5):
 
 
     #Generates & runs ffmpeg command
-    command = "ffmpeg -loglevel error -i " + str(safein) + " -af loudnorm=I="+integratedLoudness+":LRA="+loudnessRange+":TP="+truePeak+" " + str(safeout)
+    command = 'ffmpeg -loglevel error -y -i "' + str(inputfile) + '" -af loudnorm=I='+integratedLoudness+':LRA='+loudnessRange+':TP='+truePeak+' "' + str(outputfile)+'"'
     
-
     print("Running " + command)
     os.system(command)
 
