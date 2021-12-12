@@ -1,63 +1,58 @@
 from pathlib import Path
 import os
 import eyed3
+import time
+from datetime import datetime
 
-def safeconvert(input):
-    output=input.replace(" ","-")
-    output=output.replace(',','')
-    output=output.replace('(','')
-    output=output.replace(')','')
-    output=output.encode('ascii', 'xmlcharrefreplace')
-    output=output.decode('ascii')
+def safeconvert(input, type):
+    if type == "url":
+        output=input.replace(" ","-")
+        output=output.replace(',','')
+        output=output.replace('(','')
+        output=output.replace(')','')
+        output=output.encode('ascii', 'xmlcharrefreplace')
+        output=output.decode('ascii')
+    if type == "path":
+        output=input.replace(" ",r"\ ")
+        output=output.replace("(",r"\(")
+        output=output.replace(")",r"\)")
+        output=output.replace("*",r"\*")
+        output=output.replace("&",r"\&")
+        output=output.replace("~",r"\~")
+        output=output.replace("'",r"\'")
+    else:
+        output=input.replace(" ","-")
+        output=output.replace(',','')
+        output=output.replace('(','')
+        output=output.replace(')','')
+
+        output=output.encode('ascii', 'xmlcharrefreplace')
+        output=output.decode('ascii')
     return output
 
 #Gets visable files in directory, returns fileList in array as posixPathes
 def getFilesInDir(dir):
-    fileList = list(Path(dir).rglob("*.*"))
-    
-    #Defines empty array to store indexes to remove
-    toRemove = []
-    
-    #Runs through fileList index, checks if file starts with . & documents if it does
-    for file in fileList:
-        filename = os.path.basename(file)
-        print(filename)
-        if filename.startswith(".") == True:
-            print(filename + " is Invisible, adding to list")
-            #Stores index to remove in array
-            toRemove.append(fileList.index(file))
-    
-    #runs through array, removes invisibles
-    print ("Removing invisibles from array...")
-    for i in toRemove:
-        del fileList[i]
-
-    #returns array
+    fileList = list(Path(dir).rglob("*.mp3"))
+    fileList.append(list(Path(dir).rglob("*.wav")))
+    fileList.append(list(Path(dir).rglob("*.m4a")))
     return fileList
+
+def timestamp():
+    dateTimeObj = datetime.now()
+    timecode = dateTimeObj.strftime("%Y-%m-%d_%H%M%S")
+    return timecode
 
 #Applies ffmpeg's loudnorm
 def leveller(inputfile, outputfile):
     print("Processing " + str(inputfile))
-    #Defines Input/Output Extensions
-    exttmp = str(Path(inputfile).suffix)
-    extin = exttmp[1:]
-    print("Extension in: " + extin)
-    exttmp = str(Path(outputfile).suffix)
-    extout = exttmp[1:]
-    print("Extension out: " + extout)
-
-    print("Temporarily renaming file so FFMpeg doesn't cry")
-    safein = safeconvert(inputfile)
-    os.rename(inputfile, safein)
-    safeout = safeconvert(outputfile)
+    safein = safeconvert(inputfile, "path")
+    safeout = safeconvert(outputfile, "path")
     command = "ffmpeg -loglevel error -i " + str(safein) + " -af loudnorm=I=-9:LRA=11:TP=-1.5 " + str(safeout)
     print("Running " + command)
     os.system(command)
-    os.rename(safein, inputfile)
-    os.rename(safeout, outputfile)
-
 
 def metaMatch(inputfile, outputfile):
+
     print ('Writing meta to ' + outputfile)
     inmeta = eyed3.load(inputfile)
     outmeta = eyed3.load(outputfile)
@@ -75,3 +70,4 @@ def metaMatch(inputfile, outputfile):
     print ('Track Number: ' + str(trnum[0]))
     outmeta.tag.save()
     print ('Meta Saved.')
+
