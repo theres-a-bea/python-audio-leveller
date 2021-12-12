@@ -57,8 +57,9 @@ nextFile = 0
 
 while len(processedFiles)<=len(fileArray):
     if threading.active_count()<multiprocessing.cpu_count():
-        #***GET NEXT FILE, RUN THROUGH PROCESS FILE***
         fileToProcess = fileArray[nextFile]
+        newThread = threading.Thread(target=processfile, args=(fileToProcess,), daemon=True)
+        newThread.start()
         nextFile = nextFile + 1
     else:
         print("Max threads used")
